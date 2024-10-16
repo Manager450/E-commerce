@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }}</title>
+</head>
+<body>
+    <h1>{{ product.name }}</h1>
+    <p>{{ product.description }}</p>
+    <p>Price: ${{ product.price }}</p>
+
+    <form id="paymentForm">
+        <input type="email" id="email-address" placeholder="Email Address" required><br>
+        <button type="submit">Pay with Paystack</button>
+    </form>
+
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script>
+        const paymentForm = document.getElementById('paymentForm');
+        paymentForm.addEventListener('submit', payWithPaystack, false);
+
+        function payWithPaystack(e) {
+            e.preventDefault();
+            let email = document.getElementById('email-address').value;
+            fetch("{% url 'initialize-payment' product.pk %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({email: email})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.payment_url) {
+                    window.location.href = data.payment_url;
+                } else {alert('Payment initialization failed');
+                }
+            })
+        }
+    </script>
+</body>
+</html>
